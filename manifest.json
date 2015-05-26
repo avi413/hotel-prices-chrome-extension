@@ -1,0 +1,49 @@
+{
+  "manifest_version": 2,
+  "name": "Hotel Search",
+  "description": "",
+  "version": "0.2",
+
+  "icons": {
+    "128": "/img/icon256.png"
+  },
+
+  "browser_action": {
+    "default_icon": "/img/icon256.png",
+    "default_popup": "/html/popup.html"
+  },
+
+  "background": {
+    "scripts": [
+      "/lib/jquery-2.1.1.min.js",
+      "/js/Geo.js",
+      "/js/API.js",
+      "/js/API.init.js",
+      "/js/Cache.js",
+      "/js/background.js"
+    ]
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.trivago.de/*"
+      ],
+      "js": [
+        "/lib/jquery-2.1.1.min.js",
+        "/js/cs-trivago.js"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+
+  "web_accessible_resources" : [
+    "/img/*"
+  ],
+
+  "permissions": [
+    "*://*.trivago.de/*",
+    "http://*.carsolize.com/*",
+    "http://maps.googleapis.com/*"
+  ]
+}
