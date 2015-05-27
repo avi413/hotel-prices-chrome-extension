@@ -172,25 +172,32 @@
     var lat = $dataNode.data('lat');
     var lng = $dataNode.data('lng');
     var html = '';
+    var statusClassName = 'default';
     if (isFetchingPrices) {
       var spinnerSrc = chrome.extension.getURL('/img/spinner16.gif');
-      html = '<img src="' + spinnerSrc + '"/> fetching prices...';
+      html = '<img src="' + spinnerSrc + '"/> <span>fetching prices...<span>';
+      statusClassName = 'fetching';
     }
     else {
       var data = priceList[name];
-      if (data) {
-        html = name + ' - ' + data.supplier + ' - ' + data.price + ' EUR';
+      var closestHotel = findClosestHotel( lat, lng );
+      if (!data) {
+        statusClassName = 'not_found';
+        html = 'Closest hotel: ' + closestHotel.name + priceList[closestHotel.name].price + ' EUR ' + '(distance: ' + closestHotel.distance + 'm)';
+        if ( closestHotel.distance <= 20 ) {
+          statusClassName = 'found found_by_distance';
+          data = priceList[ closestHotel.name ];
+        }
       }
-      else {
-        var closestHotel = findClosestHotel( lat, lng );
-        html += 'Closest hotel: ' + closestHotel.name + ' (distance: ' + closestHotel.distance + 'm)';
-      }
+      else statusClassName = 'found found_by_name';
+
+      if (data) html = name + ' - ' + data.supplier + ' - ' + data.price + ' EUR' + ' (distance: ' + closestHotel.distance + 'm)';
     }
-    updateHotelItemInfo( item, html );
+    updateHotelItemInfo( item, html, statusClassName );
   };
 
 
-  var updateHotelItemInfo = function( item, html ){
+  var updateHotelItemInfo = function( item, html, className ){
     var $item = $(item);
     var infoblockClassName = 'extension-output';
 
@@ -198,14 +205,11 @@
     if (!$infoblock.length) {
       $infoblock = $('<div/>')
         .addClass( infoblockClassName )
-        .css({
-          'background': '#ffe0e0',
-          'padding': '10px'
-        })
         .html( html )
         .appendTo( $item );
     }
     else $infoblock.html( html );
+    $infoblock.addClass( className );
   };
 
 

@@ -1,0 +1,17 @@
+.extension-output {
+  padding: 10px;
+}
+
+.extension-output.found.found_by_name {
+  background: #e0ffe0;
+}
+.extension-output.found.found_by_distance {
+  background: #ffffe0;
+}
+.extension-output.not_found {
+  background: #ffe0e0;
+}
+
+.extension-output.fetching img, .extension-output.fetching span {
+  vertical-align: middle;
+}
