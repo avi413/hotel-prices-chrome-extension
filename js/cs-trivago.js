@@ -167,15 +167,24 @@
 
   var processHotelItem = function( item ){
     var $item = $(item);
-    var name = $item.find('.item_name').text();
+    var $dataNode = $( $item.find('[data-name]')[0] );
+    var name = $dataNode.data('name');
+    var lat = $dataNode.data('lat');
+    var lng = $dataNode.data('lng');
     var html = '';
     if (isFetchingPrices) {
       var spinnerSrc = chrome.extension.getURL('/img/spinner16.gif');
       html = '<img src="' + spinnerSrc + '"/> fetching prices...';
     }
     else {
-      html = priceList[name];
-      if (!html) html = 'not found';
+      var data = priceList[name];
+      if (data) {
+        html = name + ' - ' + data.supplier + ' - ' + data.price + ' EUR';
+      }
+      else {
+        var closestHotel = findClosestHotel( lat, lng );
+        html += 'Closest hotel: ' + closestHotel.name + ' (distance: ' + closestHotel.distance + 'm)';
+      }
     }
     updateHotelItemInfo( item, html );
   };
@@ -200,6 +209,22 @@
   };
 
 
+  var findClosestHotel = function( lat, lng ){
+    var minDistance = 1000000;
+    var closestHotelName = '';
+    for (var name in priceList) {
+      var data = priceList[name];
+      var distance = Helpers.distance(lat, lng, data.latitude, data.longitude, 'K');
+      if ( distance < minDistance) {
+        minDistance = distance;
+        closestHotelName = name;
+      }
+    }
+    return {
+      name: closestHotelName,
+      distance: (minDistance * 1000).toFixed(0)
+    };
+  };
 
   return {
     init: init

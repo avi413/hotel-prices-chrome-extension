@@ -49,8 +49,16 @@ var App = (function(){
     for (var i = 0, len = hotels.length; i < len; i++) {
       var $hotel = $( hotels[i] );
       var name = $hotel.find('DisplayName').text();
+      var supplier = $hotel.find('SuppliersLowestPackagePrices Key')[0].textContent;
       var price = $hotel.find('SuppliersLowestPackagePrices Value')[0].textContent;
-      result[name] = Math.floor( price / searchParams.nights );
+      var latitude = $hotel.find('GeoLocation Latitude').text();
+      var longitude = $hotel.find('GeoLocation Longitude').text();
+      result[name] = {
+        supplier: supplier,
+        price: Math.floor( price / searchParams.nights ),
+        latitude: latitude,
+        longitude: longitude
+      };
     }
     return result;
   };
