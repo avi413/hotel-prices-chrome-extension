@@ -183,7 +183,7 @@
       var closestHotel = findClosestHotel( lat, lng );
       if (!data) {
         statusClassName = 'not_found';
-        html = 'Closest hotel: ' + closestHotel.name + priceList[closestHotel.name].price + ' EUR ' + '(distance: ' + closestHotel.distance + 'm)';
+        html = 'Closest hotel: ' + closestHotel.name + ' - ' + priceList[closestHotel.name].price + ' EUR ' + '(distance: ' + closestHotel.distance + 'm)';
         if ( closestHotel.distance <= 20 ) {
           statusClassName = 'found found_by_distance';
           data = priceList[ closestHotel.name ];
