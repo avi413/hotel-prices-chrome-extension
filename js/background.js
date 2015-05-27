@@ -53,7 +53,8 @@ var App = (function(){
       var price = $hotel.find('SuppliersLowestPackagePrices Value')[0].textContent;
       var latitude = $hotel.find('GeoLocation Latitude').text();
       var longitude = $hotel.find('GeoLocation Longitude').text();
-      result[name] = {
+      result[name.toLowerCase()] = {
+        displayName: name,
         supplier: supplier,
         price: Math.floor( price / searchParams.nights ),
         latitude: latitude,

@@ -168,7 +168,8 @@
   var processHotelItem = function( item ){
     var $item = $(item);
     var $dataNode = $( $item.find('[data-name]')[0] );
-    var name = $dataNode.data('name');
+    var displayName = $dataNode.data('name');
+    var name = displayName.toLowerCase();
     var lat = $dataNode.data('lat');
     var lng = $dataNode.data('lng');
     var html = '';
@@ -183,15 +184,15 @@
       var closestHotel = findClosestHotel( lat, lng );
       if (!data) {
         statusClassName = 'not_found';
-        html = 'Closest hotel: ' + closestHotel.name + ' - ' + priceList[closestHotel.name].price + ' EUR ' + '(distance: ' + closestHotel.distance + 'm)';
+        html = 'Closest hotel: ' + closestHotel.displayName + ' - ' + closestHotel.price + ' EUR ' + '(distance: ' + closestHotel.distance + 'm)';
         if ( closestHotel.distance <= 20 ) {
           statusClassName = 'found found_by_distance';
-          data = priceList[ closestHotel.name ];
+          data = priceList[ closestHotel.displayName.toLowerCase() ];
         }
       }
       else statusClassName = 'found found_by_name';
 
-      if (data) html = name + ' - ' + data.supplier + ' - ' + data.price + ' EUR' + ' (distance: ' + closestHotel.distance + 'm)';
+      if (data) html = data.displayName + ' - ' + data.supplier + ' - ' + data.price + ' EUR' + ' (distance: ' + closestHotel.distance + 'm)';
     }
     updateHotelItemInfo( item, html, statusClassName );
   };
@@ -215,17 +216,19 @@
 
   var findClosestHotel = function( lat, lng ){
     var minDistance = 1000000;
-    var closestHotelName = '';
+    var closestHotel = {};
     for (var name in priceList) {
       var data = priceList[name];
       var distance = Helpers.distance(lat, lng, data.latitude, data.longitude, 'K');
       if ( distance < minDistance) {
         minDistance = distance;
-        closestHotelName = name;
+        closestHotel = priceList[name];
       }
     }
     return {
-      name: closestHotelName,
+      displayName: closestHotel.displayName,
+      supplier: closestHotel.supplier,
+      price: closestHotel.price,
       distance: (minDistance * 1000).toFixed(0)
     };
   };
