@@ -254,25 +254,22 @@
         closestHotel = item;
       }
 
-      // By distance
-      if (distance < 30) {
-        // Exact name match
-        if (tName === pName) {
-          return {hotel: item, distance: distance, status: 'found_by_name'};
-        }
-        else {
-          var tWords = tName.split(/\s+/);
-          var pWords = pName.split(/\s+/);
-          if (tWords.length > 2) {
-            var intersect = $(pWords).filter(tWords);
-            if (intersect.length / tWords.length > 0.5) {
-              return {hotel: item, distance: distance, status: 'found_by_similar_name'};
-            }
-          }
+      // Exact match
+      if (tName === pName) {
+        status = distance < 100 ? 'found_by_name' : 'found_by_name marked';
+        return {hotel: item, distance: distance, status: status};
+      }
+      // By similar names (>50% words match)
+      if (distance < 100) {
+        var tWords = tName.split(/\s+/);
+        var pWords = pName.split(/\s+/);
+        var intersect = $(pWords).filter(tWords);
+        if (intersect.length / tWords.length > 0.5 || intersect.length / pWords.length > 0.5) {
+          return {hotel: item, distance: distance, status: 'found_by_similar_name'};
         }
       }
     }
-    return null;
+    return {hotel: closestHotel, distance: minDistance, status: 'not_found'};
   };
 
 
@@ -284,8 +281,8 @@
     res = res.replace(/[-]/g, ' ');
     res = res.replace(/[']/g, '');
     res = res.replace(/(^|\s)hotel(\s|$)/, ' ');
-    var re = new RegExp('(^|\\s)' + currentCity.toLowerCase() + '\\s|$', 'g');
-    res = res.replace(re, ' ');
+    //var re = new RegExp('(^|\\s)' + currentCity.toLowerCase() + '(\\s|$)', 'g');
+    //res = res.replace(re, ' ');
     res = $.trim(res);
     return res;
   };

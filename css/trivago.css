@@ -11,29 +11,22 @@
 .extension-output .price {
   font-weight: bold;
 }
+.extension-output.fetching img, .extension-output.fetching span {
+  vertical-align: middle;
+}
+
 
 .extension-output.found_by_name, .extension-output.found_by_similar_name {
   background: #e0ffe0;
 }
-.extension-output.found_by_similar_name .display-name{
-  color: #f33;
-}
 .extension-output.found_by_distance {
   background: #e0ffe0;
-}
-.extension-output.found_by_distance .display-name {
-  color: #f33;
 }
 .extension-output.not_found {
   display: none;
   background: #ffe0e0;
 }
-
 .extension-output.marked .distance {
   font-size: 16px;
   color: #ff3333;
-}
-
-.extension-output.fetching img, .extension-output.fetching span {
-  vertical-align: middle;
 }
