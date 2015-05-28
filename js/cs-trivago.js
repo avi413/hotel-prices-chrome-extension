@@ -3,6 +3,7 @@
   var prevUrl = '';
   var priceList = [];
   var isFetchingPrices = false;
+  var currentCity = '';
 
 
   var init = function(){
@@ -120,7 +121,7 @@
     // single - 1, double - 7, family - 9
     // for now just single or double
     var guests = getQueryParam('iRoomType') > 1 ? 2 : 1;
-
+    currentCity = city;
     return {
       city: city,
       checkin: checkin,
@@ -206,6 +207,10 @@
           html = html.replace( re, params[key]);
         }
       }
+      else {
+        html = '';
+        statusClassName = 'not_found';
+      }
     }
     updateHotelItemInfo( item, html, statusClassName );
   };
@@ -229,9 +234,6 @@
 
   /**
    * Matches given hotel with list of hotels received from API
-   * - by name
-   * - by similar name
-   * - by distance
    * @param  {string} tName - trivago hotel name
    * @param  {float} tLat  - trivago latitude
    * @param  {float} tLng  - trivago longitude
@@ -252,29 +254,25 @@
         closestHotel = item;
       }
 
-      // Exact match
-      if (tName === pName) {
-        status = distance < 100 ? 'found_by_name' : 'found_by_name marked';
-        return {hotel: item, distance: distance, status: status};
-      }
-      // By similar names (>50% words match)
-      if (distance < 100) {
-        var tWords = tName.split(/\s+/);
-        var pWords = pName.split(/\s+/);
-        if (tWords.length > 2) {
-          var intersect = $(pWords).filter(tWords);
-          if (intersect.length / tWords.length > 0.5) {
-            return {hotel: item, distance: distance, status: 'found_by_similar_name'};
+      // By distance
+      if (distance < 30) {
+        // Exact name match
+        if (tName === pName) {
+          return {hotel: item, distance: distance, status: 'found_by_name'};
+        }
+        else {
+          var tWords = tName.split(/\s+/);
+          var pWords = pName.split(/\s+/);
+          if (tWords.length > 2) {
+            var intersect = $(pWords).filter(tWords);
+            if (intersect.length / tWords.length > 0.5) {
+              return {hotel: item, distance: distance, status: 'found_by_similar_name'};
+            }
           }
         }
       }
-      // By distance
-      if (distance < 20) {
-        return {hotel: item, distance: distance, status: 'found_by_distance'};
-      }
-
     }
-    return {hotel: closestHotel, distance: minDistance, status: 'not_found'};
+    return null;
   };
 
 
@@ -286,6 +284,8 @@
     res = res.replace(/[-]/g, ' ');
     res = res.replace(/[']/g, '');
     res = res.replace(/(^|\s)hotel(\s|$)/, ' ');
+    var re = new RegExp('(^|\\s)' + currentCity.toLowerCase() + '\\s|$', 'g');
+    res = res.replace(re, ' ');
     res = $.trim(res);
     return res;
   };

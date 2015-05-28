@@ -25,6 +25,7 @@
   color: #f33;
 }
 .extension-output.not_found {
+  display: none;
   background: #ffe0e0;
 }
 
