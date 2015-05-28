@@ -1,15 +1,36 @@
 .extension-output {
   padding: 10px;
 }
+.extension-output  {
+  font-size: 16px;
+}
+.extension-output .distance {
+  font-size: 12px;
+  color: #888;
+}
+.extension-output .price {
+  font-weight: bold;
+}
 
-.extension-output.found.found_by_name {
+.extension-output.found_by_name, .extension-output.found_by_similar_name {
   background: #e0ffe0;
 }
-.extension-output.found.found_by_distance {
-  background: #ffffe0;
+.extension-output.found_by_similar_name .display-name{
+  color: #f33;
+}
+.extension-output.found_by_distance {
+  background: #e0ffe0;
+}
+.extension-output.found_by_distance .display-name {
+  color: #f33;
 }
 .extension-output.not_found {
   background: #ffe0e0;
+}
+
+.extension-output.marked .distance {
+  font-size: 16px;
+  color: #ff3333;
 }
 
 .extension-output.fetching img, .extension-output.fetching span {

@@ -1,7 +1,7 @@
 (function(){
 
   var prevUrl = '';
-  var priceList = {};
+  var priceList = [];
   var isFetchingPrices = false;
 
 
@@ -165,6 +165,16 @@
   };
 
 
+  var template = [
+    '<span class="display-name">{{displayName}}</span>',
+    ' - ',
+    '<span class="supplier">{{supplier}}</span>',
+    ' - ',
+    '<span class="price">{{price}} EUR</span>',
+    ' <span class="distance">({{distance}}m)</span>',
+  ].join('');
+
+
   var processHotelItem = function( item ){
     var $item = $(item);
     var $dataNode = $( $item.find('[data-name]')[0] );
@@ -180,19 +190,22 @@
       statusClassName = 'fetching';
     }
     else {
-      var data = priceList[name];
-      var closestHotel = findClosestHotel( lat, lng );
-      if (!data) {
-        statusClassName = 'not_found';
-        html = 'Closest hotel: ' + closestHotel.displayName + ' - ' + closestHotel.price + ' EUR ' + '(distance: ' + closestHotel.distance + 'm)';
-        if ( closestHotel.distance <= 20 ) {
-          statusClassName = 'found found_by_distance';
-          data = priceList[ closestHotel.displayName.toLowerCase() ];
+      var data = matchHotel(displayName, lat, lng); // priceList[name];
+      if (data) {
+        var hotel = data.hotel;
+        statusClassName = data.status;
+        html = template;
+        var params = {
+          displayName: hotel.displayName,
+          supplier: hotel.supplier,
+          price: hotel.price,
+          distance: data.distance
+        };
+        for (var key in params) {
+          var re = new RegExp('{{' + key + '}}', 'g');
+          html = html.replace( re, params[key]);
         }
       }
-      else statusClassName = 'found found_by_name';
-
-      if (data) html = data.displayName + ' - ' + data.supplier + ' - ' + data.price + ' EUR' + ' (distance: ' + closestHotel.distance + 'm)';
     }
     updateHotelItemInfo( item, html, statusClassName );
   };
@@ -210,28 +223,73 @@
         .appendTo( $item );
     }
     else $infoblock.html( html );
-    $infoblock.addClass( className );
+    $infoblock[0].className = infoblockClassName + ' ' + className;
   };
 
 
-  var findClosestHotel = function( lat, lng ){
+  /**
+   * Matches given hotel with list of hotels received from API
+   * - by name
+   * - by similar name
+   * - by distance
+   * @param  {string} tName - trivago hotel name
+   * @param  {float} tLat  - trivago latitude
+   * @param  {float} tLng  - trivago longitude
+   * @return {object}      - {hotel: object, distance: int, status: string}
+   */
+  var matchHotel = function( tName, tLat, tLng ){
+    tName = formatHotelName( tName );
     var minDistance = 1000000;
-    var closestHotel = {};
-    for (var name in priceList) {
-      var data = priceList[name];
-      var distance = Helpers.distance(lat, lng, data.latitude, data.longitude, 'K');
-      if ( distance < minDistance) {
+    var closestHotel;
+    var status;
+    for (var i = 0, len = priceList.length; i < len; i++) {
+      var item = priceList[i];
+      var pName = formatHotelName( item.displayName );
+      var distance = Helpers.distance(tLat, tLng, item.latitude, item.longitude, 'K');
+      distance = parseInt( (distance * 1000).toFixed(0) );
+      if (distance < minDistance) {
         minDistance = distance;
-        closestHotel = priceList[name];
+        closestHotel = item;
       }
+
+      // Exact match
+      if (tName === pName) {
+        status = distance < 100 ? 'found_by_name' : 'found_by_name marked';
+        return {hotel: item, distance: distance, status: status};
+      }
+      // By similar names (>50% words match)
+      if (distance < 100) {
+        var tWords = tName.split(/\s+/);
+        var pWords = pName.split(/\s+/);
+        if (tWords.length > 2) {
+          var intersect = $(pWords).filter(tWords);
+          if (intersect.length / tWords.length > 0.5) {
+            return {hotel: item, distance: distance, status: 'found_by_similar_name'};
+          }
+        }
+      }
+      // By distance
+      if (distance < 20) {
+        return {hotel: item, distance: distance, status: 'found_by_distance'};
+      }
+
     }
-    return {
-      displayName: closestHotel.displayName,
-      supplier: closestHotel.supplier,
-      price: closestHotel.price,
-      distance: (minDistance * 1000).toFixed(0)
-    };
+    return {hotel: closestHotel, distance: minDistance, status: 'not_found'};
   };
+
+
+  /**
+   * Unify hotel name before matching
+   */
+  var formatHotelName = function( name ){
+    var res = name.toLowerCase();
+    res = res.replace(/[-]/g, ' ');
+    res = res.replace(/[']/g, '');
+    res = res.replace(/(^|\s)hotel(\s|$)/, ' ');
+    res = $.trim(res);
+    return res;
+  };
+
 
   return {
     init: init

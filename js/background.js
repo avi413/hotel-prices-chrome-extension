@@ -45,7 +45,7 @@ var App = (function(){
   var processPricesXML = function( xml, searchParams ){
     var $xml = $(xml);
     var hotels = $xml.find('Hotel');
-    var result = {};
+    var result = [];
     for (var i = 0, len = hotels.length; i < len; i++) {
       var $hotel = $( hotels[i] );
       var name = $hotel.find('DisplayName').text();
@@ -53,13 +53,13 @@ var App = (function(){
       var price = $hotel.find('SuppliersLowestPackagePrices Value')[0].textContent;
       var latitude = $hotel.find('GeoLocation Latitude').text();
       var longitude = $hotel.find('GeoLocation Longitude').text();
-      result[name.toLowerCase()] = {
+      result.push({
         displayName: name,
         supplier: supplier,
         price: Math.floor( price / searchParams.nights ),
         latitude: latitude,
         longitude: longitude
-      };
+      });
     }
     return result;
   };
