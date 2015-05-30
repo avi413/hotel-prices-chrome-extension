@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Hotel Search",
   "description": "",
-  "version": "0.4.2",
+  "version": "0.4.3",
 
   "icons": {
     "128": "/img/icon256.png"
