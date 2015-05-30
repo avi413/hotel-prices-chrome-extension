@@ -254,17 +254,24 @@
         closestHotel = item;
       }
 
+      var tNameRE = new RegExp('^' + formatHotelName(tName, true) + '$');
       // Exact match
       if (tName === pName) {
-        status = distance < 100 ? 'found_by_name' : 'found_by_name marked';
-        return {hotel: item, distance: distance, status: status};
+        return {hotel: item, distance: distance, status: 'found_by_name'};
+      }
+      else if ( tNameRE.test(pName) && distance < 200) {
+        console.log( tNameRE, pName);
+        return {hotel: item, distance: distance, status: 'found_by_name'};
       }
       // By similar names (>50% words match)
       if (distance < 100) {
         var tWords = tName.split(/\s+/);
         var pWords = pName.split(/\s+/);
         var intersect = $(pWords).filter(tWords);
-        if (intersect.length / tWords.length > 0.5 || intersect.length / pWords.length > 0.5) {
+        if (intersect.length > 1 &&
+            (intersect.length / tWords.length > 0.5 ||
+             intersect.length / pWords.length > 0.5)
+            ) {
           return {hotel: item, distance: distance, status: 'found_by_similar_name'};
         }
       }
@@ -276,11 +283,18 @@
   /**
    * Unify hotel name before matching
    */
-  var formatHotelName = function( name ){
+  var formatHotelName = function( name, returnRegexp ){
     var res = name.toLowerCase();
     res = res.replace(/[-]/g, ' ');
     res = res.replace(/[']/g, '');
     res = res.replace(/(^|\s)hotel(\s|$)/, ' ');
+    res = res.replace(/\s+/g, ' ');
+    // API returns names only in latin
+    if (returnRegexp) {
+      res = res.replace(/[^"A-Za-z0-9? ]/g, '.');
+      // sheraton5 => sheraton ?5
+      res = res.replace(/([^ \d])(\d)/g, '$1 ?$2');
+    }
     //var re = new RegExp('(^|\\s)' + currentCity.toLowerCase() + '(\\s|$)', 'g');
     //res = res.replace(re, ' ');
     res = $.trim(res);
