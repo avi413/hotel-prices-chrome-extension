@@ -3,48 +3,97 @@ var API = (function(){
   var API_URL = 'http://services.carsolize.com/BookingServices/DynamicDataService.svc';
   var username = '';
   var password = '';
+  var sessionId = '';
 
-  var payloadTemplate = ['<?xml version="1.0" encoding="UTF-8"?>',
-  '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">',
-     '<s:Body>',
+  var payloadTemplate = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">',
+       '<s:Body>',
+          '<ServiceRequest xmlns="http://tempuri.org/">',
+             '<rqst xmlns:i="http://www.w3.org/2001/XMLSchema-instance">',
+                '<Credentials xmlns="">',
+                 '<Password>{{password}}</Password>',
+                   '<UserName>{{username}}</UserName>',
+                '</Credentials>',
+                '<Request i:type="HotelsServiceSearchRequest" xmlns="">',
+                   '<ClientIP i:nil="true"/>',
+                   '<DesiredResultCurrency>EUR</DesiredResultCurrency>',
+                   '<Residency>DE</Residency>',
+                   '<CheckIn>{{checkin}}</CheckIn>',
+                   '<CheckOut>{{checkout}}</CheckOut>',
+                   '<ContractIds i:nil="true" xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>',
+                   '<DetailLevel>Meta</DetailLevel>',
+                   '<ExcludeHotelDetails>false</ExcludeHotelDetails>',
+                   '<GeoLocationInfo>',
+                      '<Latitude>{{latitude}}</Latitude>',
+                      '<Longitude>{{longitude}}</Longitude>',
+                   '</GeoLocationInfo>',
+                   '<HotelIds i:nil="true" xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>',
+                   '<HotelLocation i:nil="true"/>',
+                   '<IncludeCityTax>false</IncludeCityTax>',
+                   '<Nights>{{nights}}</Nights>',
+                   '<RadiusInMeters>30000</RadiusInMeters>',
+                   '<Rooms>',
+                      '<HotelRoomRequest>',
+                         '<AdultsCount>{{guests}}</AdultsCount>',
+                         '<KidsAges xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>',
+                      '</HotelRoomRequest>',
+                   '</Rooms>',
+                   '<SupplierIds i:nil="true" xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>',
+                '</Request>',
+                '<RequestType xmlns="">Search</RequestType>',
+                '<TypeOfService xmlns="">Hotels</TypeOfService>',
+             '</rqst>',
+          '</ServiceRequest>',
+       '</s:Body>',
+    '</s:Envelope>'
+  ].join('\n');
+
+
+  var hotelDetailsTemplate = [
+    '<?xml version="1.0" encoding="UTF-8" ?>',
+    '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">',
+      '<s:Body>',
         '<ServiceRequest xmlns="http://tempuri.org/">',
-           '<rqst xmlns:i="http://www.w3.org/2001/XMLSchema-instance">',
-              '<Credentials xmlns="">',
-               '<Password>{{password}}</Password>',
-                 '<UserName>{{username}}</UserName>',
-              '</Credentials>',
-              '<Request i:type="HotelsServiceSearchRequest" xmlns="">',
-                 '<ClientIP i:nil="true"/>',
-                 '<DesiredResultCurrency>EUR</DesiredResultCurrency>',
-                 '<Residency>DE</Residency>',
-                 '<CheckIn>{{checkin}}</CheckIn>',
-                 '<CheckOut>{{checkout}}</CheckOut>',
-                 '<ContractIds i:nil="true" xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>',
-                 '<DetailLevel>Meta</DetailLevel>',
-                 '<ExcludeHotelDetails>false</ExcludeHotelDetails>',
-                 '<GeoLocationInfo>',
-                    '<Latitude>{{latitude}}</Latitude>',
-                    '<Longitude>{{longitude}}</Longitude>',
-                 '</GeoLocationInfo>',
-                 '<HotelIds i:nil="true" xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>',
-                 '<HotelLocation i:nil="true"/>',
-                 '<IncludeCityTax>false</IncludeCityTax>',
-                 '<Nights>{{nights}}</Nights>',
-                 '<RadiusInMeters>30000</RadiusInMeters>',
-                 '<Rooms>',
-                    '<HotelRoomRequest>',
-                       '<AdultsCount>{{guests}}</AdultsCount>',
-                       '<KidsAges xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>',
-                    '</HotelRoomRequest>',
-                 '</Rooms>',
-                 '<SupplierIds i:nil="true" xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>',
-              '</Request>',
-              '<RequestType xmlns="">Search</RequestType>',
-              '<TypeOfService xmlns="">Hotels</TypeOfService>',
-           '</rqst>',
+          '<rqst xmlns:i="http://www.w3.org/2001/XMLSchema-instance">',
+            '<Request xmlns="" i:type="HotelsSupplierDetailsRequest">',
+              '<ClientIP i:nil="true" />',
+              '<HotelID>{{hotelId}}</HotelID>',
+              '<IncludePackageDetails>false</IncludePackageDetails>',
+              '<PackageID>00000000-0000-0000-0000-000000000000</PackageID>',
+              '<SupplierID>0</SupplierID>',
+            '</Request>',
+            '<RequestType xmlns="">GetAdditionalDetails</RequestType>',
+            '<SessionID xmlns="">{{sessionId}}</SessionID>',
+            '<TypeOfService xmlns="">Hotels</TypeOfService>',
+          '</rqst>',
         '</ServiceRequest>',
-     '</s:Body>',
-  '</s:Envelope>'].join('\n');
+      '</s:Body>',
+    '</s:Envelope>'
+  ].join('\n');
+
+
+  var packageDetailsTemplate = [
+    '<?xml version="1.0" encoding="UTF-8" ?> ',
+    '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">',
+      '<s:Body>',
+        '<ServiceRequest xmlns="http://tempuri.org/">',
+          '<rqst xmlns:i="http://www.w3.org/2001/XMLSchema-instance">',
+            '<Request xmlns="" i:type="HotelsSupplierDetailsRequest">',
+              '<ClientIP i:nil="true" /> ',
+              '<HotelID>{{hotelId}}</HotelID> ',
+              '<IncludePackageDetails>true</IncludePackageDetails> ',
+              '<PackageID>00000000-0000-0000-0000-000000000000</PackageID> ',
+              '<SupplierID>0</SupplierID> ',
+            '</Request>',
+            '<RequestType xmlns="">GetAdditionalDetails</RequestType> ',
+            '<SessionID xmlns="">{{sessionId}}</SessionID> ',
+            '<TypeOfService xmlns="">Hotels</TypeOfService> ',
+          '</rqst>',
+        '</ServiceRequest>',
+      '</s:Body>',
+    '</s:Envelope>',
+  ].join('\n');
 
 
   /**
@@ -57,6 +106,14 @@ var API = (function(){
   };
 
 
+  var setSessionId = function( id ){
+    sessionId = id;
+  };
+
+
+  /**
+   *
+   */
   var getPrices = function( params, onSuccess, onError ){
 
     var cacheKey = $.map( params, function(v){ return v;} ).join('_');
@@ -66,16 +123,52 @@ var API = (function(){
       return;
     }
 
-    var payload = payloadTemplate;
+    var payload = updateTemplateParams( payloadTemplate, params );
+
+    //console.log(payload);
+    sendRequest( payload, function( xml ){
+      Cache.set( cacheKey, xml);
+      if (typeof onSuccess === 'function') onSuccess(xml);
+    });
+  };
+
+
+  /**
+   * @param  {object} params    {hotelId}
+   */
+  var getHotelDetails = function( params, onSuccess, onError ){
+    var payload = updateTemplateParams( hotelDetailsTemplate, params );
+    sendRequest( payload, function( xml ){
+      if (typeof onSuccess === 'function') onSuccess(xml);
+    });
+  };
+
+
+  /**
+   * @param  {object} params    {hotelId}
+   */
+  var getPackageDetails = function( params, onSuccess, onError ){
+    var payload = updateTemplateParams( packageDetailsTemplate, params );
+    sendRequest( payload, function( xml ){
+      if (typeof onSuccess === 'function') onSuccess(xml);
+    });
+  };
+
+
+
+  var updateTemplateParams = function( payload, params ){
     params.username = username;
     params.password = password;
+    params.sessionId = sessionId;
     for (var key in params) {
       var re = new RegExp('{{' + key + '}}', 'g');
       payload = payload.replace( re, params[key]);
     }
-    //console.log(payload);
+    return payload;
+  };
 
 
+  var sendRequest = function( payload, onSuccess, onError ){
     $.ajax({
       type: "POST",
       url: API_URL,
@@ -89,7 +182,6 @@ var API = (function(){
       data: payload
     })
       .done(function(xml){
-        Cache.set( cacheKey, xml);
         if (typeof onSuccess === 'function') onSuccess(xml);
       });
   };
@@ -97,7 +189,10 @@ var API = (function(){
 
   return {
     init: init,
-    getPrices: getPrices
+    setSessionId: setSessionId,
+    getPrices: getPrices,
+    getHotelDetails: getHotelDetails,
+    getPackageDetails: getPackageDetails
   };
 
 })();
