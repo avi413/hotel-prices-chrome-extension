@@ -23,6 +23,7 @@
       function(request, sender, sendResponse) {
       if (request.cmd === 'price_list') {
         if (document.location.href !== request.data.url) return;
+        console.log(request.data);
         priceList = request.data.prices;
         isFetchingPrices = false;
         updatePrices();
@@ -167,12 +168,14 @@
 
 
   var template = [
+    '<button class="book-btn">Book</button>',
     '<span class="display-name">{{displayName}}</span>',
     ' - ',
     '<span class="supplier">{{supplier}}</span>',
     ' - ',
     '<span class="price">{{price}} EUR</span>',
     ' <span class="distance">({{distance}}m)</span>',
+    '<span class="id hidden">{{id}}</span>'
   ].join('');
 
 
@@ -192,11 +195,13 @@
     }
     else {
       var data = matchHotel(displayName, lat, lng); // priceList[name];
+      console.log(data);
       if (data) {
         var hotel = data.hotel;
         statusClassName = data.status;
         html = template;
         var params = {
+          id: hotel.id,
           displayName: hotel.displayName,
           supplier: hotel.supplier,
           price: hotel.price,
@@ -229,6 +234,22 @@
     }
     else $infoblock.html( html );
     $infoblock[0].className = infoblockClassName + ' ' + className;
+    $infoblock.find('.book-btn').click(function(){
+      var id = $infoblock.find('.id').text();
+      bookHotel( id );
+    });
+  };
+
+
+  var bookHotel = function( hotelId ){
+    chrome.runtime.sendMessage({
+      cmd: 'book_hotel',
+      data: {
+        hotelId: hotelId
+      }
+    }, function( response ){
+      console.log(response);
+    });
   };
 
 
@@ -260,7 +281,6 @@
         return {hotel: item, distance: distance, status: 'found_by_name'};
       }
       else if ( tNameRE.test(pName) && distance < 200) {
-        console.log( tNameRE, pName);
         return {hotel: item, distance: distance, status: 'found_by_name'};
       }
       // By similar names (>50% words match)

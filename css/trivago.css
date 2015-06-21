@@ -4,6 +4,9 @@
 .extension-output  {
   font-size: 16px;
 }
+.extension-output .hidden {
+  display: none;
+}
 .extension-output .distance {
   font-size: 12px;
   color: #888;
@@ -29,4 +32,10 @@
 .extension-output.marked .distance {
   font-size: 16px;
   color: #ff3333;
+}
+
+.extension-output .book-btn {
+  float: right;
+  cursor: pointer;
+  border: solid 1px #444;
 }

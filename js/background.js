@@ -12,6 +12,9 @@ var App = (function(){
         console.log(request.data);
         getPrices( request.data, sender.tab.id );
       }
+      else if (request.cmd === 'book_hotel') {
+        bookHotel( request.data.hotelId );
+      }
     });
   };
 
@@ -29,12 +32,12 @@ var App = (function(){
       params.checkout += 'T00:00:00Z';
 
       API.getPrices( params, function( response ){
-        var prices = processPricesXML( response, params );
+        var data = processPricesXML( response, params );
         chrome.tabs.sendMessage( forTabId, {
           cmd: 'price_list',
           data: {
             url: url,
-            prices: prices
+            prices: data.prices
           }
         });
       } );
@@ -49,20 +52,31 @@ var App = (function(){
     for (var i = 0, len = hotels.length; i < len; i++) {
       var $hotel = $( hotels[i] );
       var name = $hotel.find('DisplayName').text();
+      var id = $hotel.find('ID').text();
       var supplier = $hotel.find('SuppliersLowestPackagePrices Key')[0].textContent;
       var price = $hotel.find('SuppliersLowestPackagePrices Value')[0].textContent;
       var latitude = $hotel.find('GeoLocation Latitude').text();
       var longitude = $hotel.find('GeoLocation Longitude').text();
       result.push({
         displayName: name,
+        id: id,
         supplier: supplier,
         price: Math.floor( price / searchParams.nights ),
         latitude: latitude,
         longitude: longitude
       });
     }
-    return result;
+    var sessionId = $xml.find('SessionID').text();
+    API.setSessionId( sessionId );
+    return {prices: result};
   };
+
+
+  var bookHotel = function( hotelId ){
+    var url = '/html/booking.html?hotelId=' + hotelId + '&sessionId=' + API.getSessionId();
+    chrome.tabs.create({url: url});
+  };
+
 
 
   return {

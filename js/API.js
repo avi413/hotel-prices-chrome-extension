@@ -111,6 +111,10 @@ var API = (function(){
   };
 
 
+  var getSessionId = function(){
+    return sessionId;
+  };
+
   /**
    *
    */
@@ -189,6 +193,7 @@ var API = (function(){
 
   return {
     init: init,
+    getSessionId: getSessionId,
     setSessionId: setSessionId,
     getPrices: getPrices,
     getHotelDetails: getHotelDetails,
