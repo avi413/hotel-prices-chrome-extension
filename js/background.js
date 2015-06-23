@@ -13,7 +13,7 @@ var App = (function(){
         getPrices( request.data, sender.tab.id );
       }
       else if (request.cmd === 'book_hotel') {
-        bookHotel( request.data.hotelId );
+        bookHotel( request.data.hotelId, request.data.guests );
       }
     });
   };
@@ -72,8 +72,8 @@ var App = (function(){
   };
 
 
-  var bookHotel = function( hotelId ){
-    var url = '/html/booking.html?hotelId=' + hotelId + '&sessionId=' + API.getSessionId();
+  var bookHotel = function( hotelId, guests ){
+    var url = '/html/booking.html?hotelId=' + hotelId + '&sessionId=' + API.getSessionId() + '&guests=' + guests;
     chrome.tabs.create({url: url});
   };
 

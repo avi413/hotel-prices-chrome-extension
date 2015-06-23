@@ -245,7 +245,8 @@
     chrome.runtime.sendMessage({
       cmd: 'book_hotel',
       data: {
-        hotelId: hotelId
+        hotelId: hotelId,
+        guests: getSearchParams().guests
       }
     }, function( response ){
       console.log(response);

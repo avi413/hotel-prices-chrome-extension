@@ -3,16 +3,70 @@
 <head>
   <title></title>
   <link rel="stylesheet" href="/lib/bootstrap-3.3.2-dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/booking.css">
 </head>
 <body>
 
   <div class="container">
-    <h1>Booking</h1>
     <div id="hotel-details"></div>
+    <hr/>
+    <h2>Pick a package</h2>
     <div id="packages"></div>
+    <hr/>
+    <div id="guests"></div>
+    <div id="credit-card">
+
+    </div>
+    <hr/>
+    <div class="text-center">
+      <a class="btn btn-primary btn-lg">Book</a>
+    </div>
   </div>
 
+
+  <!-- Templates -->
+  <script type="text/html" id="hotel-details-template">
+    <h2>{{{GeneralDetails.DisplayName}}}</h2>
+    <img src="{{Pictures.Picture.FullSize}}"/>
+    <p>Address: {{GeneralDetails.Address}}</p>
+    <p>TripAdvisor: <img src="{{GeneralDetails.TripAdvisor.RatingImageUrl}}"/> (Reviews: {{GeneralDetails.TripAdvisor.ReviewsCount}})
+    <p>{{{description}}}</p>
+    <p>Facilities: {{{facilities}}}</p>
+  </script>
+
+
+  <script type="text/html" id="packages-template">
+    <p class="package">{{PackagePrice.FinalPrice}} {{PackagePrice.Currency}} - {{SupplierName}} - {{Rooms.Room.RoomTypeOriginal}}</p>
+  </script>
+
+
+  <script type="text/html" id="guest-template">
+    <form class="form-inline">
+      <select name="title" class="form-control">
+        <option></option>
+        <option>Mr</option>
+        <option>Mrs</option>
+      </select>
+      <div class="form-group">
+        <input type="text" class="form-control" name="firstname" placeholder="First Name">
+      </div>
+      <div class="form-group">
+        <input type="text" class="form-control" name="lastname" placeholder="Last Name">
+      </div>
+      <select name="type" class="form-control">
+        <option>Adult</option>
+        <option>Child</option>
+      </select>
+      <div class="form-group">
+        <input type="text" class="form-control" name="telephone" placeholder="Telephone">
+      </div>
+    </form>
+  </script>
+
+
   <script type="text/javascript" src="/lib/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="/lib/xml2json.js"></script>
+  <script type="text/javascript" src="/lib/mustache-0.8.1.min.js"></script>
   <script type="text/javascript" src="/js/API.js"></script>
   <script type="text/javascript" src="/js/API.init.js"></script>
   <script type="text/javascript" src="/js/booking.js"></script>

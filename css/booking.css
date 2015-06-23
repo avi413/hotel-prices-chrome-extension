@@ -1,0 +1,6 @@
+.package {
+  cursor: pointer;
+}
+.package.selected {
+  background: #afa;
+}
