@@ -96,6 +96,89 @@ var API = (function(){
   ].join('\n');
 
 
+/**
+ * BookingPrice, CreditCard, hotelId,
+ */
+
+  var bookingTemplate = [
+    '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">',
+      '<s:Body>',
+        '<ServiceRequest xmlns="http://tempuri.org/">',
+          '<rqst xmlns:i="http://www.w3.org/2001/XMLSchema-instance">',
+            '<Request i:type="HotelBookRequest" xmlns="">',
+              '<ClientIP i:nil="true" />',
+              '<BookingPrice>{{package.price}}</BookingPrice>',
+              '{{{Card}}}',
+              '<HotelID>{{package.hotelId}}</HotelID>',
+              '<InternalAgentRef1>{{InternalAgentRef1}}</InternalAgentRef1>',
+              '<InternalAgentRef2>{{InternalAgentRef2}}</InternalAgentRef2>',
+              '<LeadPaxId>{{passengers.0.guid}}</LeadPaxId>',
+              '<LeadPaxRoomId>{{package.roomId}}</LeadPaxRoomId>',
+              '<PackageID>{{package.packageId}}</PackageID>',
+              '<Passengers>',
+                '{{{Passengers}}}',
+              '</Passengers>',
+              '<RoomsRemarks xmlns:d6p1="http://schemas.microsoft.com/2003/10/Serialization/Arrays">',
+                '<d6p1:KeyValueOfstringstring>',
+                  '<d6p1:Key>{{roomRemark}}</d6p1:Key>',
+                  '<d6p1:Value i:nil="true" />',
+                '</d6p1:KeyValueOfstringstring>',
+              '</RoomsRemarks>',
+              '<SelectedPaymentMethod>{{paymentMethod}}</SelectedPaymentMethod>',
+            '</Request>',
+            '<RequestType xmlns="">Book</RequestType>',
+            '<SessionID xmlns="">{{{sessionId}}}</SessionID>',
+            '<TypeOfService xmlns="">Hotels</TypeOfService>',
+          '</rqst>',
+        '</ServiceRequest>',
+      '</s:Body>',
+    '</s:Envelope>'
+  ].join('\n');
+
+
+  var customerInfoTemplate = [
+    '<CustomerInfo>',
+      '<Address>',
+        '<AddressLine>{{addressLine}}</AddressLine>',
+        '<CityName>{{cityName}}</CityName>',
+        '<CountryName />',
+        '<PostalCode>{{postalCode}}</PostalCode>',
+      '</Address>',
+      '<Allocation>{{allocation}}</Allocation>',
+      '<Email>',
+        '<Value>{{email}}</Value>',
+      '</Email>',
+      '<Id>{{guid}}</Id>',
+      '<PersonDetails>',
+        '<Name>',
+          '<GivenName>{{firstname}}</GivenName>',
+          '<NamePrefix>{{title}}</NamePrefix>',
+          '<Surname>{{lastname}}</Surname>',
+        '</Name>',
+        '<Type>{{type}}</Type>',
+      '</PersonDetails>',
+      '<Telephone>',
+        '<PhoneNumber>{{phone}}</PhoneNumber>',
+      '</Telephone>',
+    '</CustomerInfo>',
+  ].join('\n');
+
+
+  var cardTemplate = [
+    '<Card xmlns:d6p1="http://schemas.datacontract.org/2004/07/IsuBe.Public.Enteties.Payment">',
+      '<d6p1:AddressLine>{{addressLine}}</d6p1:AddressLine>',
+      '<d6p1:CVV>{{cvv}}</d6p1:CVV>',
+      '<d6p1:CardNumber>{{cardNumber}}</d6p1:CardNumber>',
+      '<d6p1:CardType>{{cardType}}</d6p1:CardType>',
+      '<d6p1:City>{{city}}</d6p1:City>',
+      '<d6p1:Country>{{country}}</d6p1:Country>',
+      '<d6p1:ExpireDate>{{expireDate}}</d6p1:ExpireDate>',
+      '<d6p1:HolderName>{{name}}</d6p1:HolderName>',
+      '<d6p1:ZipCode>{{zipcode}}</d6p1:ZipCode>',
+    '</Card>',
+  ].join('\n');
+
+
   /**
    * Public
    */
@@ -142,9 +225,7 @@ var API = (function(){
    */
   var getHotelDetails = function( params, onSuccess, onError ){
     var payload = updateTemplateParams( hotelDetailsTemplate, params );
-    sendRequest( payload, function( xml ){
-      if (typeof onSuccess === 'function') onSuccess(xml);
-    });
+    sendRequest( payload, onSuccess, onError);
   };
 
 
@@ -153,21 +234,36 @@ var API = (function(){
    */
   var getPackageDetails = function( params, onSuccess, onError ){
     var payload = updateTemplateParams( packageDetailsTemplate, params );
-    sendRequest( payload, function( xml ){
-      if (typeof onSuccess === 'function') onSuccess(xml);
-    });
+    sendRequest( payload, onSuccess, onError);
   };
 
+
+  var makeBooking = function( params, onSuccess, onError ){
+    var Passengers = '';
+    for (var i = 0, len = params.passengers.length; i < len; i++) {
+      var passenger = params.passengers[i];
+      passenger.allocation = params.package.roomId;
+      Passengers += Mustache.to_html( customerInfoTemplate, passenger ) + '\n';
+    }
+    params.Passengers = Passengers;
+    if (params.card) {
+      var cardPayload = Mustache.to_html( cardTemplate, params.card );
+      params.Card = cardPayload;
+    }
+    var payload = updateTemplateParams( bookingTemplate, params );
+    sendRequest( payload, function( xml ){
+      console.log(xml);
+    });
+    if (typeof onSuccess === 'function') onSuccess( payload );
+    console.log(payload);
+  };
 
 
   var updateTemplateParams = function( payload, params ){
     params.username = username;
     params.password = password;
     params.sessionId = sessionId;
-    for (var key in params) {
-      var re = new RegExp('{{' + key + '}}', 'g');
-      payload = payload.replace( re, params[key]);
-    }
+    payload = Mustache.to_html( payload, params);
     return payload;
   };
 
@@ -176,7 +272,7 @@ var API = (function(){
     $.ajax({
       type: "POST",
       url: API_URL,
-      //url: '/data/response.xml',
+      //url: payload.match(/HotelsSupplierDetailsRequest/) ? '/data/packages.xml' : '/data/response.xml',
       dataType: "xml",
       processData: false,
       contentType: "text/xml; charset=\"utf-8\"",
@@ -186,7 +282,11 @@ var API = (function(){
       data: payload
     })
       .done(function(xml){
-        if (typeof onSuccess === 'function') onSuccess(xml);
+        var error = $(xml).find('Error ErrorText').text();
+        if (error) {
+          if (typeof onError === 'function') onError(error);
+        }
+        else if (typeof onSuccess === 'function') onSuccess(xml);
       });
   };
 
@@ -197,7 +297,8 @@ var API = (function(){
     setSessionId: setSessionId,
     getPrices: getPrices,
     getHotelDetails: getHotelDetails,
-    getPackageDetails: getPackageDetails
+    getPackageDetails: getPackageDetails,
+    makeBooking: makeBooking
   };
 
 })();

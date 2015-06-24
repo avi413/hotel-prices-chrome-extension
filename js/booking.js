@@ -1,5 +1,7 @@
 var View = (function(){
 
+  var status;
+
   var selectors = {
     hotelDetails: '#hotel-details',
     packages: '#packages',
@@ -13,9 +15,13 @@ var View = (function(){
     var hotelId = getQueryVariable('hotelId');
     var guestsCount = getQueryVariable('guests');
 
+    status = new Helpers.Status( $('#status'), {
+      show: {method: 'slideDown', params: []},
+      hide: {method: 'slideUp', params: []}
+    } );
     API.setSessionId( sessionId );
-    API.getHotelDetails( {hotelId: hotelId}, processHotelDetails );
-    API.getPackageDetails( {hotelId: hotelId}, processPackageDetails );
+    API.getHotelDetails( {hotelId: hotelId}, processHotelDetails, processError );
+    API.getPackageDetails( {hotelId: hotelId}, processPackageDetails, processError );
     renderForms( guestsCount );
     $( selectors.creditCard ).hide();
     $( selectors.book ).click( bookHandler );
@@ -34,6 +40,10 @@ var View = (function(){
     console.log('Query variable %s not found', variable);
   }
 
+
+  var processError = function( errorText ){
+    status.error( errorText, 10000 );
+  };
 
 
   var processHotelDetails = function( xml ){
@@ -63,11 +73,16 @@ var View = (function(){
     }
     console.log(data);
     var html = '';
-    for (var i = 0, len = data.length; i < len; i++) {
-      var package = data[i];
-      package.index = i + 1;
-      package.cardRequired = !!package.CreditCard;
-      html += Mustache.to_html( $('#packages-template').html(), package );
+    if (data[0]) {
+      for (var i = 0, len = data.length; i < len; i++) {
+        var package = data[i];
+        package.cardRequired = !!package.CreditCard;
+        html += Mustache.to_html( $('#packages-template').html(), package );
+      }
+    }
+    else {
+      data.cardRequired = !!data.CreditCard;
+      html += Mustache.to_html( $('#packages-template').html(), data );
     }
     $( selectors.packages ).html( html );
     $('.package').click( pickPackage );
@@ -92,17 +107,29 @@ var View = (function(){
     $('.package').removeClass('selected');
     $this.addClass('selected');
     $( selectors.creditCard ).toggle( !!$this.data('cardRequired') );
+    Order.setPackage({
+      packageId: $this.data('package-id'),
+      hotelId: $this.data('hotel-id'),
+      roomId: $this.data('room-id'),
+      price: $this.data('price'),
+      cardRequired: $this.data('card-required')
+    });
   };
 
 
   var bookHandler = function(){
     var data = Order.getData();
+    API.makeBooking( data, function( response ){
+      var text = $('<textarea />').text(response).html();
+      status.success( '<pre>' + text + '</pre>' );
+    }, processError );
     console.log(data);
   };
 
 
   return {
-    init: init
+    init: init,
+    status: status
   };
 
 })();
@@ -115,8 +142,10 @@ var View = (function(){
 var Order = (function(){
 
   var passengers = [];
+  var package = {};
 
-  getPassengers = function(){
+  var getPassengers = function(){
+    passengers = [];
     $('.passenger').each(function(){
       var data = {};
       var $this = $(this);
@@ -132,17 +161,31 @@ var Order = (function(){
   };
 
 
+  var setPackage = function( data ){
+    package = data;
+  };
+
+
   var getData = function(){
     getPassengers();
-    return {
+    var data = {
+      package: package,
       passengers: passengers,
-      card: CreditCard.getData()
     };
+    if (package.cardRequired){
+      data.card = CreditCard.getData();
+      data.paymentMethod = 'CreditCardInternal';
+    }
+    else {
+      data.paymentMethod = 'Cash';
+    }
+    return data;
   };
 
 
   return {
-    getData: getData,
+    setPackage: setPackage,
+    getData: getData
   };
 
 })();
@@ -181,27 +224,19 @@ var CreditCard = (function(){
  * Helpers
  */
 
-var Helpers = (function(){
+var Helpers = window.Helpers || {};
 
-  var guid = (function() {
-    function s4() {
-      return Math.floor((1 + Math.random()) * 0x10000)
-                 .toString(16)
-                 .substring(1);
-    }
-    return function() {
-      return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-             s4() + '-' + s4() + s4() + s4();
-    };
-  })();
-
-
-  return {
-    guid: guid
+Helpers.guid = (function() {
+  function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+               .toString(16)
+               .substring(1);
+  }
+  return function() {
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+           s4() + '-' + s4() + s4() + s4();
   };
-
 })();
-
 
 
 View.init();

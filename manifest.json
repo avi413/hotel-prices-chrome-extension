@@ -16,6 +16,7 @@
   "background": {
     "scripts": [
       "/lib/jquery-2.1.1.min.js",
+      "/lib/mustache-0.8.1.min.js",
       "/js/Geo.js",
       "/js/API.js",
       "/js/API.init.js",

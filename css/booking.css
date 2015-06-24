@@ -1,6 +1,9 @@
 .package {
   cursor: pointer;
 }
+.package:hover {
+  background: #cfc;
+}
 .package.selected {
   background: #cfc;
 }
