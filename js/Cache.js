@@ -1,7 +1,7 @@
 var Cache = (function(){
 
   var cache = {};
-  var cacheTime = 3600;
+  var cacheTime = 1800;
 
   var get = function( key ){
     var now = Date.now();
