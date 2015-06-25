@@ -6,6 +6,8 @@ var View = (function(){
     hotelDetails: '#hotel-details',
     packages: '#packages',
     passengers: '#guests',
+    payment: '#payment',
+    paymentForm: '#payment-form',
     creditCard: '#credit-card',
     book: '#submit'
   };
@@ -24,6 +26,7 @@ var View = (function(){
     API.getPackageDetails( {hotelId: hotelId}, processPackageDetails, processError );
     renderForms( guestsCount );
     $( selectors.creditCard ).hide();
+    $( selectors.payment ).hide();
     $( selectors.book ).click( bookHandler );
   };
 
@@ -76,15 +79,13 @@ var View = (function(){
     if (data[0]) {
       for (var i = 0, len = data.length; i < len; i++) {
         var package = data[i];
-        package.cardRequired = !!package.CreditCard;
         html += Mustache.to_html( $('#packages-template').html(), package );
       }
     }
     else {
-      data.cardRequired = !!data.CreditCard;
       html += Mustache.to_html( $('#packages-template').html(), data );
     }
-    $( selectors.packages ).html( html );
+    $( selectors.packages ).append( html );
     $('.package').click( pickPackage );
   };
 
@@ -106,7 +107,24 @@ var View = (function(){
     var $this = $(this);
     $('.package').removeClass('selected');
     $this.addClass('selected');
-    $( selectors.creditCard ).toggle( !!$this.data('cardRequired') );
+    $( selectors.payment ).show();
+    $( selectors.paymentForm ).html('<img src="/img/spinner16.gif"/>');
+    var packageId = $this.data('package-id');
+    var hotelId = $this.data('hotel-id');
+
+    API.getPaymentPreferences( {
+      packageId: packageId,
+      hotelId: hotelId
+    }, function( xml ){
+      var res = [];
+      var prefs = xml.querySelectorAll('PaymentPreference Type');
+      for (var i = 0, len = prefs.length; i < len; i++) {
+        var pref = prefs[i];
+        var type = pref.textContent;
+        res.push( {type: type, name: type.replace(/External|Internal/, '')} );
+      }
+      updatePaymentMethods( res );
+    });
     Order.setPackage({
       packageId: $this.data('package-id'),
       hotelId: $this.data('hotel-id'),
@@ -114,6 +132,21 @@ var View = (function(){
       price: $this.data('price'),
       cardRequired: $this.data('card-required')
     });
+  };
+
+
+  var updatePaymentMethods = function( prefs ){
+    var html = Mustache.to_html( $('#payment-prefs-template').html(), prefs );
+    $( selectors.paymentForm )
+      .html( html )
+      .find('input')
+      .click(function(e){
+        var paymentMethod = this.value;
+        Order.setPaymentMethod( paymentMethod );
+        if (paymentMethod.match(/CreditCard/)) $( selectors.creditCard ).show();
+        else $( selectors.creditCard ).hide();
+      });
+    $( selectors.paymentForm + ' input')[0].click();
   };
 
 
@@ -143,6 +176,7 @@ var Order = (function(){
 
   var passengers = [];
   var package = {};
+  var paymentMethod = '';
 
   var getPassengers = function(){
     passengers = [];
@@ -165,26 +199,24 @@ var Order = (function(){
     package = data;
   };
 
+  var setPaymentMethod = function( value ){
+    paymentMethod = value;
+  };
 
   var getData = function(){
     getPassengers();
     var data = {
       package: package,
       passengers: passengers,
+      paymentMethod: paymentMethod
     };
-    if (package.cardRequired){
-      data.card = CreditCard.getData();
-      data.paymentMethod = 'CreditCardInternal';
-    }
-    else {
-      data.paymentMethod = 'Cash';
-    }
     return data;
   };
 
 
   return {
     setPackage: setPackage,
+    setPaymentMethod: setPaymentMethod,
     getData: getData
   };
 

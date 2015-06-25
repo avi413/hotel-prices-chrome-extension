@@ -11,10 +11,23 @@
     <div id="hotel-details"></div>
     <hr/>
     <h2>Pick a package</h2>
-    <table id="packages"></table>
+    <table id="packages">
+      <thead>
+        <tr>
+          <td>Price</td>
+          <td>Supplier</td>
+          <td>Description</td>
+        </tr>
+      </thead>
+    </table>
     <hr/>
     <h2>Passengers</h2>
     <table id="guests"></table>
+
+    <div id="payment">
+      <h2>Payment</h2>
+      <div id="payment-form"></div>
+    </div>
 
     <div id="credit-card">
       <h2>Credit Card</h2>
@@ -123,13 +136,17 @@
       data-package-id="{{PackageId}}"
       data-hotel-id="{{HotelId}}"
       data-room-id="{{Rooms.Room.Id}}"
-      data-price="{{PackagePrice.FinalPrice}}"
-      data-card-required="{{cardRequired}}">
+      data-price="{{PackagePrice.FinalPrice}}">
       <td>{{PackagePrice.FinalPrice}} {{PackagePrice.Currency}}</td>
       <td>{{SupplierName}}</td>
       <td>{{Rooms.Room.RoomTypeOriginal}}</td>
-      <td>{{CreditCard}}</td>
     </tr>
+  </script>
+
+  <script type="text/html" id="payment-prefs-template">
+    {{#.}}
+    <label><input type="radio" name="payment-pref" value="{{type}}"/>{{name}}</label>
+    {{/.}}
   </script>
 
 

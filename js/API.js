@@ -96,8 +96,29 @@ var API = (function(){
   ].join('\n');
 
 
+  var paymentPreferencesTemplate = [
+    '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">',
+      '<s:Body>',
+        '<ServiceRequest xmlns="http://tempuri.org/">',
+          '<rqst xmlns:i="http://www.w3.org/2001/XMLSchema-instance">',
+            '<Request i:type="HotelPaymentPreferencesRequest" xmlns="">',
+              '<ClientIP i:nil="true" />',
+              '<HotelID>{{hotelId}}</HotelID>',
+              '<IncludeCancellationPolicy>false</IncludeCancellationPolicy>',
+              '<PackageID>{{packageId}}</PackageID>',
+            '</Request>',
+            '<RequestType xmlns="">GetPaymentPreferences</RequestType>',
+            '<SessionID xmlns="">{{sessionId}}</SessionID>',
+            '<TypeOfService xmlns="">Hotels</TypeOfService>',
+          '</rqst>',
+        '</ServiceRequest>',
+      '</s:Body>',
+    '</s:Envelope>'
+  ].join('\n');
+
+
 /**
- * BookingPrice, CreditCard, hotelId,
+ *
  */
 
   var bookingTemplate = [
@@ -238,6 +259,15 @@ var API = (function(){
   };
 
 
+  /**
+   * @param  {object} params    {hotelId, packageId}
+   */
+  var getPaymentPreferences = function( params, onSuccess, onError ){
+    var payload = updateTemplateParams( paymentPreferencesTemplate, params );
+    sendRequest( payload, onSuccess, onError);
+  };
+
+
   var makeBooking = function( params, onSuccess, onError ){
     var Passengers = '';
     for (var i = 0, len = params.passengers.length; i < len; i++) {
@@ -246,7 +276,7 @@ var API = (function(){
       Passengers += Mustache.to_html( customerInfoTemplate, passenger ) + '\n';
     }
     params.Passengers = Passengers;
-    if (params.card) {
+    if ( params.card && params.paymentMethod.match(/CreditCard/) ) {
       var cardPayload = Mustache.to_html( cardTemplate, params.card );
       params.Card = cardPayload;
     }
@@ -298,6 +328,7 @@ var API = (function(){
     getPrices: getPrices,
     getHotelDetails: getHotelDetails,
     getPackageDetails: getPackageDetails,
+    getPaymentPreferences: getPaymentPreferences,
     makeBooking: makeBooking
   };
 

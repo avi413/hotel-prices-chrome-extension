@@ -8,9 +8,13 @@
   background: #cfc;
 }
 
-.package td {
+#packages td {
   border: solid 1px #ccc;
   padding: 2px 8px;
+}
+
+#packages thead td {
+  background: #eee;
 }
 
 .passenger td {
@@ -19,4 +23,18 @@
 
 #credit-card-form {
   width: 50%;
+}
+
+#payment label {
+  cursor: pointer;
+  font-weight: normal;
+}
+
+#payment input {
+  margin-right: 5px;
+  vertical-align: top;
+}
+
+#payment label {
+  margin-right: 15px;
 }
