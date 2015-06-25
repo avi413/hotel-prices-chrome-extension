@@ -129,8 +129,7 @@ var View = (function(){
       packageId: $this.data('package-id'),
       hotelId: $this.data('hotel-id'),
       roomId: $this.data('room-id'),
-      price: $this.data('price'),
-      cardRequired: $this.data('card-required')
+      price: $this.data('price')
     });
   };
 
@@ -188,6 +187,8 @@ var Order = (function(){
       data.firstname = $this.find('[name=firstname]').val();
       data.lastname = $this.find('[name=lastname]').val();
       data.type = $this.find('[name=type]').val();
+      data.email = $this.find('[name=email]').val();
+      data.phone = $this.find('[name=phone]').val();
       passengers.push(data);
     });
     console.log(passengers);
@@ -210,6 +211,7 @@ var Order = (function(){
       passengers: passengers,
       paymentMethod: paymentMethod
     };
+    if (paymentMethod.match(/CreditCard/)) data.card = CreditCard.getData();
     return data;
   };
 
@@ -236,6 +238,9 @@ var CreditCard = (function(){
     data.name = $form.find('[name=card-holder-name]').val();
     data.cardNumber = $form.find('[name=card-number]').val();
     data.cvv = $form.find('[name=cvv]').val();
+    data.addressline = $form.find('[name=addressline]').val();
+    data.city = $form.find('[name=city]').val();
+    data.country = $form.find('[name=country]').val();
     data.expiryMonth = parseInt( $form.find('[name=expiry-month]').val() );
     data.expiryYear = parseInt( $form.find('[name=expiry-year]').val() );
     data.expireDate = new Date( Date.UTC(data.expiryYear, data.expiryMonth) )

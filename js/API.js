@@ -160,8 +160,8 @@ var API = (function(){
   var customerInfoTemplate = [
     '<CustomerInfo>',
       '<Address>',
-        '<AddressLine>{{addressLine}}</AddressLine>',
-        '<CityName>{{cityName}}</CityName>',
+        '<AddressLine>{{addressline}}</AddressLine>',
+        '<CityName>{{city}}</CityName>',
         '<CountryName />',
         '<PostalCode>{{postalCode}}</PostalCode>',
       '</Address>',
@@ -187,7 +187,7 @@ var API = (function(){
 
   var cardTemplate = [
     '<Card xmlns:d6p1="http://schemas.datacontract.org/2004/07/IsuBe.Public.Enteties.Payment">',
-      '<d6p1:AddressLine>{{addressLine}}</d6p1:AddressLine>',
+      '<d6p1:AddressLine>{{addressline}}</d6p1:AddressLine>',
       '<d6p1:CVV>{{cvv}}</d6p1:CVV>',
       '<d6p1:CardNumber>{{cardNumber}}</d6p1:CardNumber>',
       '<d6p1:CardType>{{cardType}}</d6p1:CardType>',

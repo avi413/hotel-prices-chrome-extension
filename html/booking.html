@@ -106,6 +106,24 @@
               <input type="text" class="form-control" name="cvv" id="cvv" placeholder="Security Code">
             </div>
           </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="card-number">Address Line</label>
+            <div class="col-sm-9">
+              <input type="text" class="form-control" name="addressline" id="addressline" placeholder="Address Line">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="card-number">City</label>
+            <div class="col-sm-9">
+              <input type="text" class="form-control" name="city" id="city" placeholder="City">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="card-number">Country</label>
+            <div class="col-sm-9">
+              <input type="text" class="form-control" name="country" id="country" placeholder="Country">
+            </div>
+          </div
         </fieldset>
       </form>
 
@@ -153,6 +171,12 @@
   <script type="text/html" id="guest-template">
     <tr class="passenger" data-guid="{{guid}}">
       <td>
+        <select name="type" class="form-control">
+          <option>Adult</option>
+          <option>Child</option>
+        </select>
+      </td>
+      <td>
         <select name="title" class="form-control">
           <option></option>
           <option>Mr</option>
@@ -161,12 +185,8 @@
       </td>
       <td><input type="text" class="form-control" name="firstname" placeholder="First Name"></td>
       <td><input type="text" class="form-control" name="lastname" placeholder="Last Name"></td>
-      <td>
-        <select name="type" class="form-control">
-          <option>Adult</option>
-          <option>Child</option>
-        </select>
-      </td>
+      <td><input type="email" class="form-control" name="email" placeholder="E-mail">
+      <td><input type="tel" class="form-control" name="phone" placeholder="Phone number">
     </tr>
   </script>
 
