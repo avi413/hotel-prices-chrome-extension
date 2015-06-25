@@ -281,10 +281,7 @@ var API = (function(){
       params.Card = cardPayload;
     }
     var payload = updateTemplateParams( bookingTemplate, params );
-    sendRequest( payload, function( xml ){
-      console.log(xml);
-    });
-    if (typeof onSuccess === 'function') onSuccess( payload );
+    sendRequest( payload, onSuccess, onError);
     console.log(payload);
   };
 
@@ -312,9 +309,20 @@ var API = (function(){
       data: payload
     })
       .done(function(xml){
-        var error = $(xml).find('Error ErrorText').text();
-        if (error) {
-          if (typeof onError === 'function') onError(error);
+        var response = '';
+        var $xml = $(xml);
+        var errors = $xml.find('Error');
+        for (var i = 0, len = errors.length; i < len; i++) {
+          var error = $( errors[i] );
+          var text = error.find('ErrorText').text();
+          var message = error.find('Message').text();
+          response += '<p>' + text + ' ' + message + '</p>';
+        }
+        if (response) {
+          if (typeof onError === 'function') onError(response);
+        }
+        else if ( $xml.find('Fault')[0] ) {
+          if (typeof onError === 'function') onError('Internal error');
         }
         else if (typeof onSuccess === 'function') onSuccess(xml);
       });

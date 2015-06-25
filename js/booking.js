@@ -9,7 +9,8 @@ var View = (function(){
     payment: '#payment',
     paymentForm: '#payment-form',
     creditCard: '#credit-card',
-    book: '#submit'
+    book: '#submit',
+    spinner: '#spinner'
   };
 
   var init = function(){
@@ -27,6 +28,7 @@ var View = (function(){
     renderForms( guestsCount );
     $( selectors.creditCard ).hide();
     $( selectors.payment ).hide();
+    $( selectors.spinner ).hide();
     $( selectors.book ).click( bookHandler );
   };
 
@@ -45,6 +47,7 @@ var View = (function(){
 
 
   var processError = function( errorText ){
+    $(selectors.spinner).hide();
     status.error( errorText, 10000 );
   };
 
@@ -151,13 +154,32 @@ var View = (function(){
 
   var bookHandler = function(){
     var data = Order.getData();
-    API.makeBooking( data, function( response ){
-      var text = $('<textarea />').text(response).html();
-      status.success( '<pre>' + text + '</pre>' );
-    }, processError );
+    $(selectors.spinner).show();
+    API.makeBooking(
+      data,
+      function( xml ){
+        $(selectors.spinner).hide();
+        processBooking( xml );
+        // var text = $('<textarea />').text(response).html();
+        // status.success( '<pre>' + text + '</pre>' );
+      }, processError );
     console.log(data);
   };
 
+
+  var processBooking = function( xml ){
+    var $xml = $(xml);
+    var bookingId = $xml.find('BookingID').text();
+    var bookingRef = $xml.find('BookingReference').text();
+    var orderId = $xml.find('OrderId').text();
+    var result = [
+      'Success!',
+      'Booking ID: ' + bookingId,
+      'Booking Reference: ' + bookingRef,
+      'Order ID: ' + orderId
+    ].join('<br/>');
+    status.success( result );
+  };
 
   return {
     init: init,
@@ -191,7 +213,6 @@ var Order = (function(){
       data.phone = $this.find('[name=phone]').val();
       passengers.push(data);
     });
-    console.log(passengers);
     return passengers;
   };
 
