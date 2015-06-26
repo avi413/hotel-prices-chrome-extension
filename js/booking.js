@@ -127,7 +127,7 @@ var View = (function(){
         res.push( {type: type, name: type.replace(/External|Internal/, '')} );
       }
       updatePaymentMethods( res );
-    });
+    }, processError);
     Order.setPackage({
       packageId: $this.data('package-id'),
       hotelId: $this.data('hotel-id'),
