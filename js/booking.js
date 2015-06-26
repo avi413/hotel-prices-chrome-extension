@@ -26,6 +26,10 @@ var View = (function(){
     API.getHotelDetails( {hotelId: hotelId}, processHotelDetails, processError );
     API.getPackageDetails( {hotelId: hotelId}, processPackageDetails, processError );
     renderForms( guestsCount );
+    $('[name="expiry-year"').html(
+      Mustache.to_html($('#years-template').html(),
+      Helpers.years())
+    );
     $( selectors.creditCard ).hide();
     $( selectors.payment ).hide();
     $( selectors.spinner ).hide();
@@ -296,5 +300,16 @@ Helpers.guid = (function() {
   };
 })();
 
+
+Helpers.years = function() {
+  var currentYear = new Date().getFullYear(), years = [];
+  endYear = currentYear + 10;
+
+  while ( currentYear <= endYear ) {
+    years.push(currentYear++);
+  }
+
+  return years;
+};
 
 View.init();
