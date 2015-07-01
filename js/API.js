@@ -17,7 +17,7 @@ var API = (function(){
                 '</Credentials>',
                 '<Request i:type="HotelsServiceSearchRequest" xmlns="">',
                    '<ClientIP i:nil="true"/>',
-                   '<DesiredResultCurrency>EUR</DesiredResultCurrency>',
+                   '<DesiredResultCurrency>{{currency}}</DesiredResultCurrency>',
                    '<Residency>DE</Residency>',
                    '<CheckIn>{{checkin}}</CheckIn>',
                    '<CheckOut>{{checkout}}</CheckOut>',

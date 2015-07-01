@@ -4,6 +4,7 @@
   var priceList = [];
   var isFetchingPrices = false;
   var currentCity = '';
+  var currency = '';
 
 
   var init = function(){
@@ -122,12 +123,18 @@
     // single - 1, double - 7, family - 9
     // for now just single or double
     var guests = getQueryParam('iRoomType') > 1 ? 2 : 1;
+    currency = $.trim($('#js_locale_currency_selector').text());
+    currency = currency.charAt(0);
+    if (currency === '£') currency = 'GBP';
+    else if (currency === "$") currency = 'USD';
+    else currency = 'EUR';
     currentCity = city;
     return {
       city: city,
       checkin: checkin,
       checkout: checkout,
-      guests: guests
+      guests: guests,
+      currency: currency
     };
   };
 
@@ -173,7 +180,7 @@
     ' - ',
     '<span class="supplier">{{supplier}}</span>',
     ' - ',
-    '<span class="price">{{price}} EUR</span>',
+    '<span class="price">{{price}} {{currency}}</span>',
     ' <span class="distance">({{distance}}m)</span>',
     '<span class="id hidden">{{id}}</span>'
   ].join('');
@@ -205,7 +212,8 @@
           displayName: hotel.displayName,
           supplier: hotel.supplier,
           price: hotel.price,
-          distance: data.distance
+          distance: data.distance,
+          currency: currency
         };
         for (var key in params) {
           var re = new RegExp('{{' + key + '}}', 'g');

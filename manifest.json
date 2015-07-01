@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Hotel Search",
   "description": "",
-  "version": "0.5.1",
+  "version": "0.5.2",
 
   "icons": {
     "128": "/img/icon256.png"
@@ -48,7 +48,6 @@
   ],
 
   "permissions": [
-    "*://*.trivago.de/*",
     "http://*.carsolize.com/*",
     "http://maps.googleapis.com/*"
   ]
